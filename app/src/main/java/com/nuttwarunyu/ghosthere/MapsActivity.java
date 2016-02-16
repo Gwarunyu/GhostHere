@@ -1,24 +1,14 @@
 package com.nuttwarunyu.ghosthere;
 
 import android.Manifest;
-import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.Typeface;
-import android.location.Address;
 import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -33,6 +23,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -51,6 +43,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private HashMap<Marker, MyMarker> markerMyMarkerHashMap;
     private ArrayList<MyMarker> myMarkerArrayList = new ArrayList<MyMarker>();
+    String title_ghost;
 
     public boolean isConnectingToInternet() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -70,15 +63,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         markerMyMarkerHashMap = new HashMap<Marker, MyMarker>();
 
-        new TaskProcess().execute();
+        if (!isConnectingToInternet()) {
+            Toast.makeText(MapsActivity.this, "Internet not connect", Toast.LENGTH_SHORT).show();
+        } else
+            new TaskProcess().execute();
 
         /*myMarkerArrayList.add(new MyMarker("Brasil", "icon1", Double.parseDouble("-28.5971788"), Double.parseDouble("-52.7309824")));
         myMarkerArrayList.add(new MyMarker("United States", "icon2", Double.parseDouble("33.7266622"), Double.parseDouble("-87.1469829")));
-        myMarkerArrayList.add(new MyMarker("Canada", "icon3", Double.parseDouble("51.8917773"), Double.parseDouble("-86.0922954")));
-        myMarkerArrayList.add(new MyMarker("England", "icon4", Double.parseDouble("52.4435047"), Double.parseDouble("-3.4199249")));
-        myMarkerArrayList.add(new MyMarker("España", "icon5", Double.parseDouble("41.8728262"), Double.parseDouble("-0.2375882")));
-        myMarkerArrayList.add(new MyMarker("Portugal", "icon6", Double.parseDouble("40.8316649"), Double.parseDouble("-4.936009")));
-*/
+        */
     }
 
     @Override
@@ -99,25 +91,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.d("location", "Not null");
                 onLocationChange(location);
             }
-
         } else {
             Log.d("checkSelfPermission", "out condition");
         }
+
+        double latitude = 13.82418;
+        double longitude = 100.57282;
+        LatLng latLng = new LatLng(latitude, longitude);
+        CircleOptions circleOptions = new CircleOptions().center(latLng).radius(1000);
+        mMap.addCircle(circleOptions);
 
     }
 
     private void plotMarkers(ArrayList<MyMarker> markers) {
         Log.d("plotMarkers ", "markers in : " + markers);
         if (markers.size() > 0) {
-            for (MyMarker myMarker : markers) {
+            for (final MyMarker myMarker : markers) {
                 MarkerOptions markerOptions = new MarkerOptions()
-                        .position(new LatLng(Double.parseDouble(myMarker.getmLatitude()),Double.parseDouble(myMarker.getmLongitude())));
+                        .position(new LatLng(Double.parseDouble(myMarker.getmLatitude()), Double.parseDouble(myMarker.getmLongitude())));
                 //.icon(BitmapDescriptorFactory.fromResource(R.drawable.ghost));
 
                 Marker currentMarker = mMap.addMarker(markerOptions);
                 markerMyMarkerHashMap.put(currentMarker, myMarker);
 
+
                 mMap.setInfoWindowAdapter(new MarkerInfoWindowAdapter());
+                mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+                    @Override
+                    public void onInfoWindowClick(Marker marker) {
+                        Log.d("onInfoWindowClick", "title : " + title_ghost);
+                        Intent intent = new Intent(getApplicationContext(), GhostStoryActivity.class);
+                        intent.putExtra("title", title_ghost);
+                        startActivity(intent);
+                    }
+                });
             }
         }
     }
@@ -144,14 +151,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         public View getInfoContents(Marker marker) {
             View view = getLayoutInflater().inflate(R.layout.infowindow_layout, null);
-            MyMarker myMarker = markerMyMarkerHashMap.get(marker);
+            final MyMarker myMarker = markerMyMarkerHashMap.get(marker);
             ImageView markerIcon = (ImageView) view.findViewById(R.id.marker_icon);
             TextView markerLabel = (TextView) view.findViewById(R.id.marker_label);
 
+            title_ghost = myMarker.getmLabel();
+
+            //Glide.with(getApplicationContext()).load(s).fitCenter().into(markerIcon);
             markerIcon.setImageResource(manageMarkerIcon(myMarker.getmIcon()));
-            markerLabel.setText(myMarker.getmLabel());
+            markerLabel.setText(title_ghost);
+
             return view;
         }
+
     }
 
     private int manageMarkerIcon(String markerIcon) {

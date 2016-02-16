@@ -10,14 +10,6 @@ public class MyMarker {
     private String mLatitude;
     private String mLongitude;
 
-    /*public MyMarker(String label, String icon, Double latitude, Double longitude)
-    {
-        this.mLabel = label;
-        this.mIcon = icon;
-        this.mLatitude = latitude;
-        this.mLongitude = longitude;
-    }*/
-
     public String getmLabel() {
         return mLabel;
     }
