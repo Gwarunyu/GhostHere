@@ -5,13 +5,18 @@ package com.nuttwarunyu.ghosthere;
  */
 public class MyMarker {
 
-    private String mLabel;
+    private String mTitle;
     private String mIcon;
     private String mLatitude;
     private String mLongitude;
+    private String mStory;
 
-    public String getmLabel() {
-        return mLabel;
+    public String getmStory() {
+        return mStory;
+    }
+
+    public String getmTitle() {
+        return mTitle;
     }
 
     public String getmLatitude() {
@@ -30,8 +35,8 @@ public class MyMarker {
         this.mIcon = mIcon;
     }
 
-    public void setmLabel(String mLabel) {
-        this.mLabel = mLabel;
+    public void setmTitle(String mTitle) {
+        this.mTitle = mTitle;
     }
 
     public void setmLatitude(String mLatitude) {
@@ -42,4 +47,7 @@ public class MyMarker {
         this.mLongitude = mLongitude;
     }
 
+    public void setmStory(String mStory) {
+        this.mStory = mStory;
+    }
 }

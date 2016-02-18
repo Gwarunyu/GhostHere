@@ -23,7 +23,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -43,7 +42,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private HashMap<Marker, MyMarker> markerMyMarkerHashMap;
     private ArrayList<MyMarker> myMarkerArrayList = new ArrayList<MyMarker>();
+    private ArrayList<CircleArea> circleAreaArrayList = new ArrayList<CircleArea>();
     String title_ghost;
+    String story_ghost;
 
     public boolean isConnectingToInternet() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -67,10 +68,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Toast.makeText(MapsActivity.this, "Internet not connect", Toast.LENGTH_SHORT).show();
         } else
             new TaskProcess().execute();
-
-        /*myMarkerArrayList.add(new MyMarker("Brasil", "icon1", Double.parseDouble("-28.5971788"), Double.parseDouble("-52.7309824")));
-        myMarkerArrayList.add(new MyMarker("United States", "icon2", Double.parseDouble("33.7266622"), Double.parseDouble("-87.1469829")));
-        */
     }
 
     @Override
@@ -81,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 == PackageManager.PERMISSION_GRANTED) {
             Log.d("checkSelfPermission", "in condition");
             mMap.setMyLocationEnabled(true);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.82718, 100.51282), 15));
 
             LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
             Criteria criteria = new Criteria();
@@ -95,20 +93,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Log.d("checkSelfPermission", "out condition");
         }
 
-        double latitude = 13.82418;
-        double longitude = 100.57282;
-        LatLng latLng = new LatLng(latitude, longitude);
-        CircleOptions circleOptions = new CircleOptions().center(latLng).radius(1000);
-        mMap.addCircle(circleOptions);
 
     }
 
+    private void plotCircle(ArrayList<CircleArea> circleAreas) {
+        if (circleAreas.size() > 0) {
+            for (CircleArea circleArea : circleAreas) {
+                CircleOptions circleOptions = new CircleOptions().fillColor(0x30ff0004)
+                        .strokeColor(0x30ff0004).radius(circleArea.getRadius())
+                        .center(new LatLng(circleArea.getLatitude(), circleArea.getLongitude()));
+
+                mMap.addCircle(circleOptions);
+            }
+        }
+    }
+
     private void plotMarkers(ArrayList<MyMarker> markers) {
-        Log.d("plotMarkers ", "markers in : " + markers);
         if (markers.size() > 0) {
             for (final MyMarker myMarker : markers) {
                 MarkerOptions markerOptions = new MarkerOptions()
-                        .position(new LatLng(Double.parseDouble(myMarker.getmLatitude()), Double.parseDouble(myMarker.getmLongitude())));
+                        .position(new LatLng(Double.parseDouble(myMarker.getmLatitude()),
+                                Double.parseDouble(myMarker.getmLongitude())));
                 //.icon(BitmapDescriptorFactory.fromResource(R.drawable.ghost));
 
                 Marker currentMarker = mMap.addMarker(markerOptions);
@@ -119,9 +124,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                     @Override
                     public void onInfoWindowClick(Marker marker) {
-                        Log.d("onInfoWindowClick", "title : " + title_ghost);
                         Intent intent = new Intent(getApplicationContext(), GhostStoryActivity.class);
                         intent.putExtra("title", title_ghost);
+                        intent.putExtra("story", story_ghost);
                         startActivity(intent);
                     }
                 });
@@ -154,8 +159,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             final MyMarker myMarker = markerMyMarkerHashMap.get(marker);
             ImageView markerIcon = (ImageView) view.findViewById(R.id.marker_icon);
             TextView markerLabel = (TextView) view.findViewById(R.id.marker_label);
+            title_ghost = myMarker.getmTitle();
+            story_ghost = myMarker.getmStory();
 
-            title_ghost = myMarker.getmLabel();
 
             //Glide.with(getApplicationContext()).load(s).fitCenter().into(markerIcon);
             markerIcon.setImageResource(manageMarkerIcon(myMarker.getmIcon()));
@@ -194,18 +200,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             try {
                 ParseQuery<ParseObject> parseQuery = new ParseQuery<ParseObject>("TestObject");
+                ParseQuery<ParseObject> parseQueryCircle = new ParseQuery<ParseObject>("ghost_db");
 
                 parseObjectList = parseQuery.find();
-                Log.d("doInBackground", "parseObjectList : " + parseObjectList);
                 for (ParseObject parseObject : parseObjectList) {
                     MyMarker myMarker = new MyMarker();
-                    myMarker.setmLabel((String) parseObject.get("title_ghost"));
+                    myMarker.setmTitle((String) parseObject.get("title_ghost"));
                     myMarker.setmLatitude((String) parseObject.get("lat_ghost"));
                     myMarker.setmLongitude((String) parseObject.get("lng_ghost"));
                     myMarker.setmIcon((String) parseObject.get("img_info"));
-                    Log.d("doInBackground", "mymarker : " + myMarker);
+                    myMarker.setmStory((String) parseObject.get("story_ghost"));
+
                     myMarkerArrayList.add(myMarker);
                 }
+
+                parseObjectList = parseQueryCircle.find();
+                for (ParseObject parseObject : parseObjectList) {
+                    Log.d("parseObjectList", " parseObjectList.size : " + parseObjectList.size());
+                    CircleArea circleArea = new CircleArea();
+                    circleArea.setLatitude((String) parseObject.get("c_latitude"));
+                    circleArea.setLongitude((String) parseObject.get("c_longitude"));
+                    circleArea.setRadius((String) parseObject.get("c_radius"));
+
+                    circleAreaArrayList.add(circleArea);
+                }
+
             } catch (ParseException e) {
                 Log.e("doInBackground", "Error : " + e);
                 e.printStackTrace();
@@ -217,6 +236,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         protected void onPostExecute(Void aVoid) {
             Log.d("onPostExecute", "myMarkerArrayList : " + myMarkerArrayList);
             plotMarkers(myMarkerArrayList);
+            Log.d("onPostExecute", "circleAreaArrayList : " + circleAreaArrayList);
+            plotCircle(circleAreaArrayList);
         }
     }
 
