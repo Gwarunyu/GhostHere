@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
+        android:name=".ParseApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -29,8 +30,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".GhostStoryActivity">
-        </activity>
+        <activity android:name=".GhostStoryActivity"></activity>
 
         <meta-data
             android:name="com.parse.APPLICATION_ID"
@@ -39,6 +39,7 @@
             android:name="com.parse.CLIENT_KEY"
             android:value="e0ZD8B6IEIfzFUlC3IYK7DcqTJEkXnuyDmIKIiVB" />
 
+        <activity android:name=".ReadStoryActivity"></activity>
     </application>
 
 </manifest>

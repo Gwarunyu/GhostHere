@@ -10,6 +10,20 @@ public class MyMarker {
     private String mLatitude;
     private String mLongitude;
     private String mStory;
+    private String mRadius;
+    private String mColor;
+
+    public String getmColor() {
+        return mColor;
+    }
+
+    public void setmColor(String mColor) {
+        this.mColor = mColor;
+    }
+
+    public String getmRadius() {
+        return mRadius;
+    }
 
     public String getmStory() {
         return mStory;
@@ -45,6 +59,10 @@ public class MyMarker {
 
     public void setmLongitude(String mLongitude) {
         this.mLongitude = mLongitude;
+    }
+
+    public void setmRadius(String mRadius) {
+        this.mRadius = mRadius;
     }
 
     public void setmStory(String mStory) {

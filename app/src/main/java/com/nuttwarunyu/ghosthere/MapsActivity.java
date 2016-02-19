@@ -1,7 +1,9 @@
 package com.nuttwarunyu.ghosthere;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -14,6 +16,7 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,6 +48,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ArrayList<CircleArea> circleAreaArrayList = new ArrayList<CircleArea>();
     String title_ghost;
     String story_ghost;
+    Double latitude;
+    Double longitude;
+    Button btnGoToStory;
 
     public boolean isConnectingToInternet() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -59,21 +65,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        Parse.enableLocalDatastore(this);
-        Parse.initialize(this);
-
+        btnGoToStory = (Button) findViewById(R.id.btn_goStory);
         markerMyMarkerHashMap = new HashMap<Marker, MyMarker>();
 
         if (!isConnectingToInternet()) {
             Toast.makeText(MapsActivity.this, "Internet not connect", Toast.LENGTH_SHORT).show();
         } else
             new TaskProcess().execute();
+
+        btnGoToStory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), ReadStoryActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             Log.d("checkSelfPermission", "in condition");
@@ -88,24 +102,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if (location != null) {
                 Log.d("location", "Not null");
                 onLocationChange(location);
+            } else {
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+                alertDialogBuilder
+                        .setMessage("GPS is disabled in your device. Enable it?")
+                        .setCancelable(false)
+                        .setPositiveButton("Enable GPS",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,
+                                                        int id) {
+                                        Intent callGPSSettingIntent = new Intent(
+                                                android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                        startActivity(callGPSSettingIntent);
+                                    }
+                                });
+                alertDialogBuilder.setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+                AlertDialog alert = alertDialogBuilder.create();
+                alert.show();
             }
+
         } else {
             Log.d("checkSelfPermission", "out condition");
         }
 
-
-    }
-
-    private void plotCircle(ArrayList<CircleArea> circleAreas) {
-        if (circleAreas.size() > 0) {
-            for (CircleArea circleArea : circleAreas) {
-                CircleOptions circleOptions = new CircleOptions().fillColor(0x30ff0004)
-                        .strokeColor(0x30ff0004).radius(circleArea.getRadius())
-                        .center(new LatLng(circleArea.getLatitude(), circleArea.getLongitude()));
-
-                mMap.addCircle(circleOptions);
-            }
-        }
     }
 
     private void plotMarkers(ArrayList<MyMarker> markers) {
@@ -119,15 +143,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Marker currentMarker = mMap.addMarker(markerOptions);
                 markerMyMarkerHashMap.put(currentMarker, myMarker);
 
+                CircleOptions circleOptions = new CircleOptions().fillColor(manageCircleColor(myMarker.getmColor()))
+                        .strokeColor(manageCircleColor(myMarker.getmColor())).radius(manageRadius(myMarker.getmRadius()))
+                        .center(new LatLng(Double.parseDouble(myMarker.getmLatitude()), Double.parseDouble(myMarker.getmLongitude())));
+                mMap.addCircle(circleOptions);
+
 
                 mMap.setInfoWindowAdapter(new MarkerInfoWindowAdapter());
                 mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                     @Override
                     public void onInfoWindowClick(Marker marker) {
-                        Intent intent = new Intent(getApplicationContext(), GhostStoryActivity.class);
-                        intent.putExtra("title", title_ghost);
-                        intent.putExtra("story", story_ghost);
-                        startActivity(intent);
+                        if (story_ghost == null) {
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 16));
+                            Toast.makeText(MapsActivity.this, "ที่นี่คือ. . ." + title_ghost, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Intent intent = new Intent(getApplicationContext(), GhostStoryActivity.class);
+                            intent.putExtra("title", title_ghost);
+                            intent.putExtra("story", story_ghost);
+                            startActivity(intent);
+                        }
                     }
                 });
             }
@@ -161,7 +195,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             TextView markerLabel = (TextView) view.findViewById(R.id.marker_label);
             title_ghost = myMarker.getmTitle();
             story_ghost = myMarker.getmStory();
+            latitude = Double.parseDouble(myMarker.getmLatitude());
+            longitude = Double.parseDouble(myMarker.getmLongitude());
 
+            Log.d("getInfoContents", "story_ghost : " + story_ghost);
 
             //Glide.with(getApplicationContext()).load(s).fitCenter().into(markerIcon);
             markerIcon.setImageResource(manageMarkerIcon(myMarker.getmIcon()));
@@ -170,6 +207,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return view;
         }
 
+    }
+
+    private Double manageRadius(String s) {
+        switch (s) {
+            case "s":
+                return (double) 100;
+            case "m":
+                return (double) 150;
+            case "l":
+                return (double) 200;
+            default:
+                return (double) 150;
+        }
+    }
+
+    private int manageCircleColor(String s) {
+        switch (s) {
+            case "red":
+                return 0x30ff0004;
+            case "yellow":
+                return 0x30FFF200;
+            case "dark":
+                return 0x30000000;
+            default:
+                return 0x30C40DAF;
+        }
     }
 
     private int manageMarkerIcon(String markerIcon) {
@@ -210,19 +273,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     myMarker.setmLongitude((String) parseObject.get("lng_ghost"));
                     myMarker.setmIcon((String) parseObject.get("img_info"));
                     myMarker.setmStory((String) parseObject.get("story_ghost"));
+                    myMarker.setmRadius((String) parseObject.get("radius"));
+                    myMarker.setmColor((String) parseObject.get("zone"));
 
                     myMarkerArrayList.add(myMarker);
-                }
-
-                parseObjectList = parseQueryCircle.find();
-                for (ParseObject parseObject : parseObjectList) {
-                    Log.d("parseObjectList", " parseObjectList.size : " + parseObjectList.size());
-                    CircleArea circleArea = new CircleArea();
-                    circleArea.setLatitude((String) parseObject.get("c_latitude"));
-                    circleArea.setLongitude((String) parseObject.get("c_longitude"));
-                    circleArea.setRadius((String) parseObject.get("c_radius"));
-
-                    circleAreaArrayList.add(circleArea);
                 }
 
             } catch (ParseException e) {
@@ -234,10 +288,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            Log.d("onPostExecute", "myMarkerArrayList : " + myMarkerArrayList);
             plotMarkers(myMarkerArrayList);
-            Log.d("onPostExecute", "circleAreaArrayList : " + circleAreaArrayList);
-            plotCircle(circleAreaArrayList);
+            // plotCircle(circleAreaArrayList);
         }
     }
 
