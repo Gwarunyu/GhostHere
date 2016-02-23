@@ -32,5 +32,6 @@ dependencies {
     compile 'com.google.android.gms:play-services-location:8.4.0'
     compile 'com.parse.bolts:bolts-android:1.4.0'
     compile 'com.parse:parse-android:1.13.0'
-    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.android.support:design:23.1.1'
+    compile 'com.facebook.android:audience-network-sdk:4.10.0'
 }

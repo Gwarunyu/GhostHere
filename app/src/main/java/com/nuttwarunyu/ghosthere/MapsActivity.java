@@ -18,9 +18,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.ads.AdSettings;
+import com.facebook.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -51,6 +55,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Double latitude;
     Double longitude;
     Button btnGoToStory;
+    private com.facebook.ads.AdView adView;
 
     public boolean isConnectingToInternet() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -58,9 +63,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
+    protected void onDestroy() {
+       adView.destroy();
+        super.onDestroy();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        RelativeLayout adViewContainer = (RelativeLayout) findViewById(R.id.adViewContainer);
+        adView = new com.facebook.ads.AdView(this, "1009708792436521_1009709125769821", AdSize.BANNER_320_50);
+        adViewContainer.addView(adView);
+        adView.loadAd();
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);

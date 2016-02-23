@@ -17,11 +17,18 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Story"
+        android:text="@string/gotoStory"
         android:id="@+id/btn_goStory"
-        android:layout_marginTop="3dp"
+        android:layout_marginTop="5dp"
         android:layout_alignParentRight="true"
         android:layout_marginRight="50dp"
+        />
+
+    <RelativeLayout
+        android:layout_alignParentBottom="true"
+        android:id="@+id/adViewContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         />
 
 </RelativeLayout>
