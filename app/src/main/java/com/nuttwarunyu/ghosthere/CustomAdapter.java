@@ -56,7 +56,6 @@ public class CustomAdapter extends BaseAdapter {
 
     @Override
     public View getView(final int position, View view, ViewGroup parent) {
-
         final ViewHolder viewHolder;
         if (view == null) {
             viewHolder = new ViewHolder();
