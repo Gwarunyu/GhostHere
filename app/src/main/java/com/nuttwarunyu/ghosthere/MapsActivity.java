@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -22,9 +23,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.facebook.ads.AdSettings;
-import com.facebook.ads.AdSize;
-import com.google.android.gms.ads.AdView;
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -34,7 +33,6 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -43,19 +41,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import io.fabric.sdk.android.Fabric;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     List<ParseObject> parseObjectList;
     private GoogleMap mMap;
     private HashMap<Marker, MyMarker> markerMyMarkerHashMap;
     private ArrayList<MyMarker> myMarkerArrayList = new ArrayList<MyMarker>();
-    private ArrayList<CircleArea> circleAreaArrayList = new ArrayList<CircleArea>();
+
     String title_ghost;
     String story_ghost;
     Double latitude;
     Double longitude;
     Button btnGoToStory;
-    private com.facebook.ads.AdView adView;
+
 
     public boolean isConnectingToInternet() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -63,8 +63,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+    }
+
+    @Override
     protected void onDestroy() {
-       adView.destroy();
         super.onDestroy();
     }
 
@@ -72,18 +83,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
-        RelativeLayout adViewContainer = (RelativeLayout) findViewById(R.id.adViewContainer);
-        adView = new com.facebook.ads.AdView(this, "1009708792436521_1009709125769821", AdSize.BANNER_320_50);
-        adViewContainer.addView(adView);
-        adView.loadAd();
-
+        Fabric.with(this, new Crashlytics());
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         btnGoToStory = (Button) findViewById(R.id.btn_goStory);
-        markerMyMarkerHashMap = new HashMap<Marker, MyMarker>();
+
+        markerMyMarkerHashMap = new HashMap<>();
 
         if (!isConnectingToInternet()) {
             Toast.makeText(MapsActivity.this, "Internet not connect", Toast.LENGTH_SHORT).show();
@@ -104,7 +111,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             Log.d("checkSelfPermission", "in condition");
@@ -248,26 +255,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             case "dark":
                 return 0x30000000;
             default:
-                return 0x30C40DAF;
+                return 0x30ff0004;
         }
     }
 
     private int manageMarkerIcon(String markerIcon) {
         switch (markerIcon) {
-            case "icon1":
-                return R.drawable.icon1;
-            case "icon2":
-                return R.drawable.icon2;
-            case "icon3":
-                return R.drawable.icon3;
-            case "icon4":
-                return R.drawable.icon4;
-            case "icon5":
-                return R.drawable.icon5;
-            case "icon6":
-                return R.drawable.icon6;
+            case "uni":
+                return R.drawable.schoolhallway;
+            case "temple":
+                return R.drawable.thailand;
+            case "cemetery":
+                return R.drawable.gravestones154427;
+            case "hospital":
+                return R.drawable.hospital12;
+            case "market":
+                return R.drawable.theforest;
             default:
-                return R.drawable.cemetery;
+                return R.drawable.ghost147768;
         }
     }
 
@@ -306,7 +311,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected void onPostExecute(Void aVoid) {
             plotMarkers(myMarkerArrayList);
-            // plotCircle(circleAreaArrayList);
+
         }
     }
 

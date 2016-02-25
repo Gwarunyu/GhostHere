@@ -31,7 +31,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".GhostStoryActivity"></activity>
+        <activity android:name=".GhostStoryActivity">
+
+        </activity>
 
         <meta-data
             android:name="com.parse.APPLICATION_ID"
@@ -40,7 +42,14 @@
             android:name="com.parse.CLIENT_KEY"
             android:value="e0ZD8B6IEIfzFUlC3IYK7DcqTJEkXnuyDmIKIiVB" />
 
-        <activity android:name=".ReadStoryActivity"></activity>
+        <activity android:name=".ReadStoryActivity">
+
+        </activity>
+
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="8a739f6eeb5f6b92a23670a117220b0594c7b9cb" />
     </application>
 
 </manifest>

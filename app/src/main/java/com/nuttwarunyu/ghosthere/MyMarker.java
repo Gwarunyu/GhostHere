@@ -12,6 +12,24 @@ public class MyMarker {
     private String mStory;
     private String mRadius;
     private String mColor;
+    private String mProvince;
+    private String mPhotoFile;
+
+    public void setmPhotoFile(String mPhotoFile) {
+        this.mPhotoFile = mPhotoFile;
+    }
+
+    public String getmPhotoFile() {
+        return mPhotoFile;
+    }
+
+    public void setmProvince(String mProvince) {
+        this.mProvince = mProvince;
+    }
+
+    public String getmProvince() {
+        return mProvince;
+    }
 
     public String getmColor() {
         return mColor;

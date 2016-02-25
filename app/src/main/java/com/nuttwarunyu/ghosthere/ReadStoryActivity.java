@@ -41,7 +41,7 @@ public class ReadStoryActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
-            myMarkerArrayList = new ArrayList<MyMarker>();
+            myMarkerArrayList = new ArrayList<>();
 
             try {
                 ParseQuery<ParseObject> parseQuery = new ParseQuery<ParseObject>("TestObject");
@@ -50,17 +50,20 @@ public class ReadStoryActivity extends AppCompatActivity {
                 parseObjectList = parseQuery.find();
 
                 for (ParseObject parseObject : parseObjectList) {
+
+                    ParseFile image = (ParseFile) parseObject.get("photoFile");
                     MyMarker myMarker = new MyMarker();
+
                     myMarker.setmTitle((String) parseObject.get("title_ghost"));
                     myMarker.setmLatitude((String) parseObject.get("lat_ghost"));
                     myMarker.setmLongitude((String) parseObject.get("lng_ghost"));
-                    myMarker.setmIcon((String) parseObject.get("img_info"));
                     myMarker.setmStory((String) parseObject.get("story_ghost"));
-                    myMarker.setmRadius((String) parseObject.get("radius"));
-                    myMarker.setmColor((String) parseObject.get("zone"));
+                    myMarker.setmProvince((String) parseObject.get("province"));
+                    myMarker.setmIcon((String) parseObject.get("img_info"));
+                    myMarker.setmPhotoFile(image.getUrl());
 
                     myMarkerArrayList.add(myMarker);
-                    Log.d("myMarkerArrayList", "myMarkerArrayList : " + myMarker);
+
                 }
 
             } catch (ParseException e) {
@@ -74,6 +77,7 @@ public class ReadStoryActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             customAdapter = new CustomAdapter(getApplicationContext(), myMarkerArrayList);
             listView.setAdapter(customAdapter);
+
         }
     }
 

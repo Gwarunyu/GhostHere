@@ -1,6 +1,10 @@
 package com.nuttwarunyu.ghosthere;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Typeface;
+import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +12,10 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -20,11 +28,14 @@ public class CustomAdapter extends BaseAdapter {
     private LayoutInflater mInflater;
     ArrayList<MyMarker> myMarkerArrayList = null;
     ArrayList<MyMarker> arrayList;
+    Typeface myFont;
 
     public CustomAdapter(Context context, ArrayList<MyMarker> markers) {
         this.context = context;
         this.myMarkerArrayList = markers;
         mInflater = LayoutInflater.from(context);
+        myFont = Typeface.createFromAsset(this.context.getAssets(), "CSPraJad.otf");
+
 
     }
 
@@ -44,7 +55,7 @@ public class CustomAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View view, ViewGroup parent) {
+    public View getView(final int position, View view, ViewGroup parent) {
 
         final ViewHolder viewHolder;
         if (view == null) {
@@ -52,15 +63,35 @@ public class CustomAdapter extends BaseAdapter {
             view = mInflater.inflate(R.layout.story_listview, null);
 
             viewHolder.title = (TextView) view.findViewById(R.id.txt_title_name);
-            viewHolder.story = (TextView) view.findViewById(R.id.txt_location);
+            viewHolder.province = (TextView) view.findViewById(R.id.txt_location);
             viewHolder.image = (ImageView) view.findViewById(R.id.img_ghost_listview);
             view.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) view.getTag();
         }
 
+        viewHolder.title.setTypeface(myFont);
+        viewHolder.province.setTypeface(myFont);
+
         viewHolder.title.setText(myMarkerArrayList.get(position).getmTitle());
-        viewHolder.story.setText(myMarkerArrayList.get(position).getmStory());
+        viewHolder.province.setText(myMarkerArrayList.get(position).getmProvince());
+        viewHolder.story = myMarkerArrayList.get(position).getmStory();
+
+        Glide.with(context).load(myMarkerArrayList.get(position).getmPhotoFile()).centerCrop().into(viewHolder.image);
+
+
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, GhostStoryActivity.class);
+                intent.putExtra("title", viewHolder.title.getText());
+                intent.putExtra("story", viewHolder.story);
+                intent.putExtra("province", viewHolder.province.getText());
+                intent.putExtra("photoFile",myMarkerArrayList.get(position).getmPhotoFile());
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+            }
+        });
 
         return view;
     }
@@ -68,7 +99,8 @@ public class CustomAdapter extends BaseAdapter {
     private static class ViewHolder {
 
         TextView title;
-        TextView story;
+        String story;
+        TextView province;
         ImageView image;
     }
 
