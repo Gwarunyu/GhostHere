@@ -76,8 +76,8 @@ public class CustomAdapter extends BaseAdapter {
         viewHolder.province.setText(myMarkerArrayList.get(position).getmProvince());
         viewHolder.story = myMarkerArrayList.get(position).getmStory();
 
-        Glide.with(context).load(myMarkerArrayList.get(position).getmPhotoFile()).centerCrop().into(viewHolder.image);
-
+        Glide.with(context).load(myMarkerArrayList.get(position).getmPhotoFile()).placeholder(R.drawable.ic_placeholder)
+                .error(R.drawable.hospital12).centerCrop().into(viewHolder.image);
 
         view.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -86,7 +86,7 @@ public class CustomAdapter extends BaseAdapter {
                 intent.putExtra("title", viewHolder.title.getText());
                 intent.putExtra("story", viewHolder.story);
                 intent.putExtra("province", viewHolder.province.getText());
-                intent.putExtra("photoFile",myMarkerArrayList.get(position).getmPhotoFile());
+                intent.putExtra("photoFile", myMarkerArrayList.get(position).getmPhotoFile());
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(intent);
             }

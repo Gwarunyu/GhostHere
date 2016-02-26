@@ -1,6 +1,7 @@
 package com.nuttwarunyu.ghosthere;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -37,6 +38,11 @@ public class ReadStoryActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            progressDialog = new ProgressDialog(ReadStoryActivity.this);
+            progressDialog.setTitle("มีผีมั้ย?");
+            progressDialog.setMessage("กรูณารอสักครู่ . . .");
+            progressDialog.setIndeterminate(false);
+            progressDialog.show();
         }
 
         @Override
@@ -77,8 +83,15 @@ public class ReadStoryActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             customAdapter = new CustomAdapter(getApplicationContext(), myMarkerArrayList);
             listView.setAdapter(customAdapter);
-
+            progressDialog.dismiss();
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(ReadStoryActivity.this, MapsActivity.class);
+        startActivity(intent);
+        finish();
+    }
 }

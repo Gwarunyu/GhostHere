@@ -2,6 +2,7 @@ package com.nuttwarunyu.ghosthere;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -62,6 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return connectivityManager.getActiveNetworkInfo() != null;
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -89,6 +91,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         btnGoToStory = (Button) findViewById(R.id.btn_goStory);
+        Typeface myFont = Typeface.createFromAsset(this.getAssets(), "max_somsin.ttf");
+        btnGoToStory.setTypeface(myFont);
 
         markerMyMarkerHashMap = new HashMap<>();
 
@@ -116,7 +120,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 == PackageManager.PERMISSION_GRANTED) {
             Log.d("checkSelfPermission", "in condition");
             mMap.setMyLocationEnabled(true);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.82718, 100.51282), 15));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.82718, 100.51282), 13));
 
             LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
             Criteria criteria = new Criteria();
@@ -161,8 +165,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             for (final MyMarker myMarker : markers) {
                 MarkerOptions markerOptions = new MarkerOptions()
                         .position(new LatLng(Double.parseDouble(myMarker.getmLatitude()),
-                                Double.parseDouble(myMarker.getmLongitude())));
-                //.icon(BitmapDescriptorFactory.fromResource(R.drawable.ghost));
+                                Double.parseDouble(myMarker.getmLongitude())))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker));
 
                 Marker currentMarker = mMap.addMarker(markerOptions);
                 markerMyMarkerHashMap.put(currentMarker, myMarker);
@@ -184,6 +188,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             Intent intent = new Intent(getApplicationContext(), GhostStoryActivity.class);
                             intent.putExtra("title", title_ghost);
                             intent.putExtra("story", story_ghost);
+                            intent.putExtra("photoFile", String.valueOf(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker)));
                             startActivity(intent);
                         }
                     }
